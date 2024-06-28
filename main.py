@@ -27,7 +27,7 @@ def update():
         player.angle = player.angle_to(mouse_pos)-90
 
         if random.randint(0, 100)<3:
-            enemy = Actor("enemygreen5")
+            enemy = Actor("enemy_green5")
             enemy.lv = 1
             enemy.hp = 1
             
@@ -49,8 +49,8 @@ def update():
             enemy.point_towards(player)
             enemies.append(enemy)
         
-        if random.randint(0, 100)<3 :
-            enemy = Actor("enemyred3")
+        if random.randint(0, 100)<3 and player.score >= 100:
+            enemy = Actor("enemy_red3")
             enemy.lv = 2
             enemy.hp = 3
             
@@ -74,25 +74,26 @@ def update():
 
         for e in enemies:
             #e.point_towards(player)
+            if e.hp <= 0:
+                enemies.remove(e)
+                player.score += 10
+                break
             e.move_forward(2)
             if e.left>WIDTH or e.right<0 or e.top>HEIGHT:
                 enemies.remove(e)
             if player.colliderect(e):
                 player.hp -= 5*e.lv
-            enemies.remove(e)
+                enemies.remove(e)
             if random.randint(0, 100)<2   :
-                elaser = Actor('laserred07')
+                elaser = Actor('laser_red07')
                 elaser.pos = e.pos
                 elaser.point_towards(player)
                 elasers.append(elaser)
 
         if keyboard.space:
-            laser = Actor('laserblue01')
+            laser = Actor('laser_blue01')
             laser.pos = player.pos
-            if enemies:
-                laser.angle = player.angle+90
-            else:
-                laser.angle=90
+            laser.angle = player.angle+90
             lasers.append(laser)
 
         if keyboard.up:
@@ -114,19 +115,18 @@ def update():
             player.bottom = HEIGHT
 
         for l in lasers:
+            rm_l = False
             l.move_forward(5)
             if l.bottom < 0 or l.top>HEIGHT or l.right<0 or l.left>WIDTH:
-                lasers.remove(l)
-                break 
+                rm_l = True
             else:
                 for e in enemies:
                     if l.colliderect(e):
                         e.hp -= 1
-                        lasers.remove(l)
-                        if e.hp <= 0:                         
-                            enemies.remove(e)
-                            player.score += 10
-                            break
+                        rm_l = True
+            if rm_l:
+                lasers.remove(l)
+                break
         for el in elasers:
             el.move_forward(5)
             if el.top > HEIGHT:
@@ -134,6 +134,7 @@ def update():
                 break
             if player.colliderect(el):
                 elasers.remove(el)
+                player.hp -= 1
                 break
     
     else:
